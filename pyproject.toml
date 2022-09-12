@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dtlib"
-version = "0.0.0.dev1"
+version = "0.0.0.dev2"
 authors = [
   { name="Jeffrey Bonde", email="jeffrey.bonde@gmail.com" },
 ]
