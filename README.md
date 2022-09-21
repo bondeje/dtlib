@@ -8,28 +8,62 @@ Do you love trees? I love trees; exploring their various implementations and alg
 
 Tree types 
 
-##### Public tree types (class diagram to be produced when more mature)
+##### Public tree type interfaces (class diagram to be produced when more mature)
 - Tree
-  - BinaryTree - A collection of plain data ordered only by manual relationships to neighboring data
-    - BinarySearchTree - Data in a Binary Tree organized for searching and sorting optimization
+  - BinaryTree
+    - BinarySearchTree
       - OrderStatisticsTree - Data in a Binary Search Tree for which rank and selection query optimization
         - WeightBalancedTree - Data in an OrderStatisticTree with optimization on the tree structure (self-balancing) to improve query times and, for `Array` storage, memory
     - BinaryHeap - A traditional Min- or Max- heap, configurable by the User
       - MinMaxHeap - A dually embedded Heap structure optimized for both `min` and `max` queries at the same time
      
 #### Public API details
-As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees. 
+As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
 
-###### Tree interface functions (subject to change)
-| required function | standard semantics | exceptions |
-|:----------------- |:------------------ |:---------- |
-| `size` | get the number of elements in the tree | N/A |
-| `__len__` | same as `size` | N/A |
-| `add` | insert or add a value to the tree data structure; <br>generally does not specify where | heaps currently do not support, use `push` |
-| `remove` | remove a value from the tree data structure; <br>value must be present or exception is raised | heaps currently do not support, use `pop`, <br> which does not raise exception |
-| `discard` | remove a value from the tree data structure; <br>do nothing if not present | heaps currently do not support, use `pop` |
+For all trees, arbitrary data can be stored in each "Node" of the `Tree`. For the purposes of many trees which need to order, select, or at least differentiate contents based on attribute or derived quantity, all `Tree`s will support the storage of a `key` callable such that `key(stored data)` results in derived data that satisfies some minimal ordering (meaning at least `>` or `<`)
+
+###### `Tree` interface functions
+Target meeting abc.Collection interface requirements and many will meet the abc.Sequence interface requirements, but will have semantic differences
+| required function | standard semantics |
+|:----------------- |:------------------ |
+| `__contains__` | check if a key is in the `Tree` structure |
+| `__eq__` | check if two `Tree`s are equivalent |
+| `__len__` | see `size` |
+| `__iter__` | iterate over the elements of the tree (NOT YET IMPLEMENTED) |
+| `add` | insert or add a value to the tree data structure; <br>generally does not specify where |
+| `discard` | remove a value from the tree data structure; <br>do nothing if value not present |
+| `remove` | remove a value from the tree data structure; <br>value must be present or exception is raised |
+| `size` | get the number of elements in the tree |
+| `traverse` | move element by element in a specified or prescribed order and possibly apply some function |
 
 This does not mean all implementations of these functions have the same semantics nor that all trees implement them with the same interface. For some trees, usually those with opaque structures, the normal semantics of the function is different enough that the function is blocked until a clear use case is defined. For example, a heap usually only cares about removal of the head/root of the underlying tree. The heap implementations has a specific function to do this, `pop`, but the `remove` function is not defined/not implemented since removal of an arbitrary value in a heap does not have a clear use case and definitely cannot use the same one as a plain `BinaryTree` from which it would otherwise inherit `remove`. It might be defined as an alias in the future for the heap-specific functions, but definitely not have the semantics of `remove` as used say by any of the `BinarySearchTree`s.
+
+##### `BinaryTree` interface functions
+A collection of plain data ordered only by relationships to 3 neighboring nodes (parent, left child, right child)
+
+No required interface functions. The concrete binary tree classes merely provide baseline implementations for subclasses. Though the direct subclasses of `BinaryTree` can be instantiated, there are not many uses cases for their instances.
+
+###### A quick note about traversals
+The BinaryTrees do provide the base implementations of `traverse` for all BinaryTree subclasses. Traversal orders are specified by one of 4 flags, which are defined in `dtlib.trees._constants`. They are as below
+| traversal flag | visit order |
+|:-------------- |:----------- |
+| TRAVERSE_INORDER | left child, node, right child |
+| TRAVERSE_PREORDER | node, left child, right child |
+| TRAVERSE_POSTORDER | left child, right child, node |
+| TRAVERSE_LEVELORDER | left to right for nodes on the same level from root of tree to leaves |
+
+Traversals will have two different styles:
+1) procedural traversals where a function and its arguments and keywords are passed to the traversing function and applied to every node as it is visited along the traversal
+   - this method, though somewhat tedious requiring a function following a specification for each application, is quite general
+   - user has control over termination of the traversal with the flags `TRAVERSE_GO` and `TRAVERSE_STOP`
+2) iterators (not yet implemented) for simple interfaces to that many python interfaces that accept iterables
+   - it is not yet decided whether this will be implemented as a simple generator yielding sequential values or designator iterator classes that act as views
+
+##### `BinarySearchTree` interface functions
+Data in a Binary Tree organized for searching and sorting optimization
+| required function | standard semantics |
+|:----------------- |:------------------ |
+| `search` | find an element that matches|
 
 #### Internal details
 A separate metaclass `TreeMeta` exists to customize construction of `Tree` subclasses, interfaces. For now, all this metaclass does is account for the ability to specify the storage paradigms. For all implemented `Trees`, I endeavor to make at least 2 storage paradigms available. More may be made in the future to further optimize performance.
