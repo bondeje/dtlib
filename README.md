@@ -99,7 +99,7 @@ A dually embedded Heap structure optimized for both `min` and `max` queries at t
 | `pop_max` | remove and return the value with the maximum key |
 | `pop_min` | remove and return the value with the minimum key |
 | `pushpop_max` | simultaneous pusha and remove and return the value with the maximum key |
-| `puspop_min` | simultaneous pusha and remove and return the value with the minimum key |
+| `pushpop_min` | simultaneous push and remove and return the value with the minimum key |
 
 #### Internal details
 A separate metaclass `TreeMeta` exists to customize construction of `Tree` subclasses, interfaces. For now, all this metaclass does is account for the ability to specify the storage paradigms. For all implemented `Trees`, I endeavor to make at least 2 storage paradigms available. More may be made in the future to further optimize performance.
