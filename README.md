@@ -81,8 +81,8 @@ nodeA["next"] # = None
 ```
 
 ##### Node storage
-| Node type^1 | description | identifier |
-|:--------- |:------------ |:---------- |
+| Node type^1 | description | valida attributes |
+|:----------- |:----------- |:----------------- |
 | LIST_NODE | a simple list for node decorations with integer indices as attributes^2 | non-negative integer indices|
 | DICT_NODE | store node as a dictionary with keys as attributes | hashable values |
 | CLASS_NODE | store node as a class instance with attributes | hashable values |
