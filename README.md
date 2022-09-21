@@ -6,23 +6,21 @@ Do you love trees? I love trees; exploring their various implementations and alg
 
 ### Basic module layout and tree data type interface/construction details
 
-Tree types 
-
 ##### Public tree type interfaces (class diagram to be produced when more mature)
-- Tree
-  - BinaryTree
-    - BinarySearchTree
-      - OrderStatisticsTree - Data in a Binary Search Tree for which rank and selection query optimization
-        - WeightBalancedTree - Data in an OrderStatisticTree with optimization on the tree structure (self-balancing) to improve query times and, for `Array` storage, memory
-    - BinaryHeap - A traditional Min- or Max- heap, configurable by the User
-      - MinMaxHeap - A dually embedded Heap structure optimized for both `min` and `max` queries at the same time
+- `Tree`
+  - `BinaryTree`
+    - `BinarySearchTree`
+      - `OrderStatisticsTree`
+        - `WeightBalancedTree`
+    - `BinaryHeap`
+      - `MinMaxHeap`
      
 #### Public API details
 As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
 
 For all trees, arbitrary data can be stored in each "Node" of the `Tree`. For the purposes of many trees which need to order, select, or at least differentiate contents based on attribute or derived quantity, all `Tree`s will support the storage of a `key` callable such that `key(stored data)` results in derived data that satisfies some minimal ordering (meaning at least `>` or `<`)
 
-###### `Tree` interface functions
+##### `Tree` interface functions
 Target meeting abc.Collection interface requirements and many will meet the abc.Sequence interface requirements, but will have semantic differences
 | required function | standard semantics |
 |:----------------- |:------------------ |
@@ -35,6 +33,7 @@ Target meeting abc.Collection interface requirements and many will meet the abc.
 | `remove` | remove a value from the tree data structure; <br>value must be present or exception is raised |
 | `size` | get the number of elements in the tree |
 | `traverse` | move element by element in a specified or prescribed order and possibly apply some function |
+| `validate` | evaluates that all defining properties of the tree type are met |
 
 This does not mean all implementations of these functions have the same semantics nor that all trees implement them with the same interface. For some trees, usually those with opaque structures, the normal semantics of the function is different enough that the function is blocked until a clear use case is defined. For example, a heap usually only cares about removal of the head/root of the underlying tree. The heap implementations has a specific function to do this, `pop`, but the `remove` function is not defined/not implemented since removal of an arbitrary value in a heap does not have a clear use case and definitely cannot use the same one as a plain `BinaryTree` from which it would otherwise inherit `remove`. It might be defined as an alias in the future for the heap-specific functions, but definitely not have the semantics of `remove` as used say by any of the `BinarySearchTree`s.
 
@@ -44,13 +43,13 @@ A collection of plain data ordered only by relationships to 3 neighboring nodes 
 No required interface functions. The concrete binary tree classes merely provide baseline implementations for subclasses. Though the direct subclasses of `BinaryTree` can be instantiated, there are not many uses cases for their instances.
 
 ###### A quick note about traversals
-The BinaryTrees do provide the base implementations of `traverse` for all BinaryTree subclasses. Traversal orders are specified by one of 4 flags, which are defined in `dtlib.trees._constants`. They are as below
+The `BinaryTree`s provide the base implementations of `traverse` for all `BinaryTree` subclasses. Traversal orders are specified by one of 4 flags, which are defined in `dtlib.trees._constants`. They are as below
 | traversal flag | visit order |
 |:-------------- |:----------- |
-| TRAVERSE_INORDER | left child, node, right child |
-| TRAVERSE_PREORDER | node, left child, right child |
-| TRAVERSE_POSTORDER | left child, right child, node |
-| TRAVERSE_LEVELORDER | left to right for nodes on the same level from root of tree to leaves |
+| `TRAVERSE_INORDER` | left child, node, right child |
+| `TRAVERSE_PREORDER` | node, left child, right child |
+| `TRAVERSE_POSTORDER` | left child, right child, node |
+| `TRAVERSE_LEVELORDER` | left to right for nodes on the same level from root of tree to leaves |
 
 Traversals will have two different styles:
 1) procedural traversals where a function and its arguments and keywords are passed to the traversing function and applied to every node as it is visited along the traversal
@@ -60,10 +59,47 @@ Traversals will have two different styles:
    - it is not yet decided whether this will be implemented as a simple generator yielding sequential values or designator iterator classes that act as views
 
 ##### `BinarySearchTree` interface functions
-Data in a Binary Tree organized for searching and sorting optimization
+Data in a `BinaryTree` organized for searching and sorting optimization.
 | required function | standard semantics |
 |:----------------- |:------------------ |
 | `search` | find an element that matches|
+
+General implementation notes: 
+- can be configured to allow duplicate keys (default) or not
+- insertion order would be stable, i.e. the sort resulting from a sequence of insertions followed by inorder traversal is a stable sort
+- in the case of duplicates, search can be configured to find the first inserted, first encountered (default), or last inserted key with the flags `SEARCH_FIRST_INORDER`, `SEARCH_FIRST_LEVELORDER`, and `SEARCH_LAST_INORDER`, respectively.
+
+##### `OrderStatisticsTree` interface functions
+Data in a `BinarySearchTree` for which rank and selection query are optimized
+| required function | standard semantics |
+|:----------------- |:------------------ |
+| `select` | find the kth element in order |
+| `rank`   | find the sequence index corresponding to a key |
+
+##### `WeightBalancedTree` interface functions
+Data in an `OrderStatisticTree` with optimization on the tree structure (self-balancing) to improve query times and, for `Array` storage, memory
+
+No required interface functions.
+
+##### `BinaryHeap` interface functions
+A traditional Min- or Max- heap, configurable by the User
+| required function | standard semantics |
+|:----------------- |:------------------ |
+| `maximum` | access the value with the maximum key in the system |
+| `minimum` | access the value with the minimum key in the heap |
+| `peek` | access the root node of the heap |
+| `pop` | remove and return the root node of the heap |
+| `push` | add a new value to heap |
+| `pushpop` | simultaneous push and pop |
+
+##### `MinMaxHeap` interface functions
+A dually embedded Heap structure optimized for both `min` and `max` queries at the same time
+| required function | standard semantics |
+|:----------------- |:------------------ |
+| `pop_max` | remove and return the value with the maximum key |
+| `pop_min` | remove and return the value with the minimum key |
+| `pushpop_max` | simultaneous pusha and remove and return the value with the maximum key |
+| `puspop_min` | simultaneous pusha and remove and return the value with the minimum key |
 
 #### Internal details
 A separate metaclass `TreeMeta` exists to customize construction of `Tree` subclasses, interfaces. For now, all this metaclass does is account for the ability to specify the storage paradigms. For all implemented `Trees`, I endeavor to make at least 2 storage paradigms available. More may be made in the future to further optimize performance.
