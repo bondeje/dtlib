@@ -16,13 +16,13 @@ Class diagram to be produced when more mature. For now, indentation indicates it
     - `BinaryHeap` [complete, in testing]
       - `MinMaxHeap` [complete, in testing]
 #### Classes
-There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`. The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. 
+There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`, based on the underlying storage (described below). The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. Specifically, if you want to create a `BinarySearchTree` with `ARRAY_STORAGE` rather than `LINKED_STORAGE`, use `tree = BinarySearchTree(*args, storage=ARRAY_STORAGE, **kwargs)`. You can also use `tree = ArrayBinarySearchTree(*args, **kwargs)` but the former is preferred. Each interface has a default storage based on what makes most sense for the geometry of the tree. Trees that are balanced or complete will tend to have `ARRAY_STORAGE` preferred/default since they can take advantage of memory savings and speed improvements based on cache locality for large trees. Other trees will generally default to `LINKED_STORAGE`.
 
-Other classes:
+Other classes (`has a` relationship to the interfaces and their subclasses, NOT `is a`):
 - `TreeMap` (`Mapping`, `BinarySearchTree`-like) [in planning]
 - `HeapTree` (`Sequence`, `BinaryHeap`-like and `BinarySearchTree`-like) [in planning, open to name suggestions...this is NOT a `treap`]
   - `MinMaxTree` (`Sequence`, `MinMaxHeap`-like and `BinarySearchTree`-like) [partial, in testing]
-     
+
 #### Public API details
 As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
 
