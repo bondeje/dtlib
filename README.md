@@ -19,9 +19,9 @@ Class diagram to be produced when more mature. For now, indentation indicates it
 There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`. The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. 
 
 Other classes:
-- `TreeMap` (`BinarySearchTree`-like) [in planning]
-- `HeapTree` (`BinaryHeap` and `BinarySearchTree`-like) [in planning, open to name suggestions...this is NOT a `treap`]
-  - `MinMaxTree` (`MinMaxHeap` and `BinarySearchTree`-like) [partial, in testing]
+- `TreeMap` (`Mapping`, `BinarySearchTree`-like) [in planning]
+- `HeapTree` (`Sequence`, `BinaryHeap`-like and `BinarySearchTree`-like) [in planning, open to name suggestions...this is NOT a `treap`]
+  - `MinMaxTree` (`Sequence`, `MinMaxHeap`-like and `BinarySearchTree`-like) [partial, in testing]
      
 #### Public API details
 As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
