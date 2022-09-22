@@ -14,7 +14,7 @@ Class diagram to be produced when more mature. For now, indentation indicates it
       - `OrderStatisticTree` [complete, in testing]
         - `WeightBalancedTree` [complete, in testing]
     - `BinaryHeap` [complete, in testing]
-      - `MinMaxHeap` [complete, in testing]
+      - `MinMaxHeap` [partial with ARRAY_STORAGE complete, in testing]
 #### Classes
 There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`, based on the underlying storage (described below). The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. Specifically, if you want to create a `BinarySearchTree` with `ARRAY_STORAGE` rather than `LINKED_STORAGE`, use `tree = BinarySearchTree(*args, storage=ARRAY_STORAGE, **kwargs)`. You can also use `tree = ArrayBinarySearchTree(*args, **kwargs)` but the former is preferred. Each interface has a default storage based on what makes most sense for the geometry of the tree. Trees that are balanced or complete will tend to have `ARRAY_STORAGE` preferred/default since they can take advantage of memory savings and speed improvements based on cache locality for large trees. Other trees will generally default to `LINKED_STORAGE`.
 
