@@ -59,12 +59,13 @@ The `BinaryTree`s provide the base implementations of `traverse` for all `Binary
 | `TRAVERSE_POSTORDER` | left child, right child, node |
 | `TRAVERSE_LEVELORDER` | left to right for nodes on the same level from root of tree to leaves |
 
-Traversals will have two different styles:
+Traversals can be done in two ways:
 1) procedural traversals where a function and its arguments and keywords are passed to the traversing function and applied to every node as it is visited along the traversal
    - this method, though somewhat tedious requiring a function following a specification for each application, is quite general
    - user has control over termination of the traversal with the flags `TRAVERSE_GO` and `TRAVERSE_STOP`
-2) iterators for simple interfaces to that many python interfaces that accept iterables
-   - 
+   - use `tree.traverse(*args, **kwargs)`
+2) iterators for simple interfaces to the many python interfaces that accept iterables
+   - use `tree.__iter__()`, `tree.__reversed__()` for configured default traversals and `tree.iterator(*args, **kwargs)` to configure the traversal on the fly.
 
 ##### `BinarySearchTree` interface functions
 Data in a `BinaryTree` organized for searching and sorting optimization.
