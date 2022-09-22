@@ -6,14 +6,22 @@ Do you love trees? I love trees; exploring their various implementations and alg
 
 ### Basic module layout and tree data type interface/construction details
 
-##### Public tree type interfaces (class diagram to be produced when more mature)
-- `Tree` (abc.Collection
-  - `BinaryTree`
-    - `BinarySearchTree` (abc.Sequence, can be configured to be abc.Set-like)
-      - `OrderStatisticsTree`
-        - `WeightBalancedTree`
-    - `BinaryHeap`
-      - `MinMaxHeap`
+#### Public tree type interfaces: Class/Interface name (inheritance notes) [status]
+Class diagram to be produced when more mature. For now, indentation indicates it inherits from the interface above it
+- `Tree` (`abc.Collection`) [complete, in testing]
+  - `BinaryTree` [complete, in testing]
+    - `BinarySearchTree` (`abc.Sequence`, can be configured to be abc.Set-like) [in testing]
+      - `OrderStatisticTree` [complete, in testing]
+        - `WeightBalancedTree` [complete, in testing]
+    - `BinaryHeap` [complete, in testing]
+      - `MinMaxHeap` [complete, in testing]
+#### Classes
+There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`. The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. 
+
+Other classes:
+- `TreeMap` (`BinarySearchTree`-like) [in planning]
+- `HeapTree` (`BinaryHeap` and `BinarySearchTree`-like) [in planning, open to name suggestions...this is NOT a `treap`]
+  - `MinMaxTree` (`MinMaxHeap` and `BinarySearchTree`-like) [partial, in testing]
      
 #### Public API details
 As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
@@ -214,4 +222,5 @@ In principle, the same thing can be done with `DICT_NODE` by subclassing `dict` 
 7) Binomial Heap
 8) Pairing Heap
 9) Fibonacci Heap
-10) MinMaxTree
+10) Treap
+11) SplayTree
