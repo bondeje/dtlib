@@ -70,9 +70,9 @@ Data in a `BinaryTree` organized for searching and sorting optimization.
 | `search` | find an element that matches the key |
 
 General implementation notes: 
-- can be configured to allow duplicate keys (default) or not
+- can be configured to allow duplicate keys (default) or not to allow more `set`-like behavior
 - insertion order is stable, i.e. the sort resulting from a sequence of insertions followed by inorder traversal is a stable sort
-- reverse is done in O(1) time with an internal handle by using the member function `reverse()`, which is also compatible with `__reversed__` iteration. It is highly suggested not to reverse by defining a `key` that reverses a natural ordering if you do not have to. Specifically `a=BinarySearchTree(iterable, reverse=True)` for elements that already obey an ordering rather than something like `a=BinarySearchTree(iterable, key=lambda x: -x)`. The first example is the method for doing a reverse `TreeSort`: `[el for el in BinarySearchTree(iterable, reverse=True)]` results in a reverse-sorted copy of iterable.
+- reverse is done in O(1) time with an internal handle by using the member function `reverse()`, which is also compatible with `__reversed__` iteration. It is highly suggested not to reverse by defining a `key` that reverses a natural ordering if you do not have to. Specifically `a=BinarySearchTree(iterable, reverse=True)` for elements that already obey an ordering rather than something like `a=BinarySearchTree(iterable, key=lambda x: -x)` like you might do to make a `heapq` heap a "max heap". 
 - in the case of duplicates, search can be configured to find the first inserted, first encountered (default), or last inserted key with the flags `SEARCH_FIRST_INORDER`, `SEARCH_FIRST_LEVELORDER`, and `SEARCH_LAST_INORDER`, respectively.
 
 ##### `OrderStatisticsTree` interface functions
@@ -116,7 +116,9 @@ A separate metaclass `TreeMeta` exists to customize construction of `Tree` subcl
 | Array | The tree is stored as a sequence of nodes in a list | pointer/reference data locality for fast read/write access. <br> navigation algorithms are simple as fewer pointer stores need to be updated | poorly balanced trees or frequent, large data rearrangements may offset locality advantages |
 | Linked | The tree is stored as linked node objects; the "traditional" storage of trees. | modifications algorithms are very simple | requires additional pointer memory to link nodes that need to be maintained <br> large datasets will suffer pointer non-locality performance losses |
    
-Each storage paradigm has its own class hierarchy for each tree type defined in separate `.py` files to organize the functionality attributable to the classes and types. For example, there are a `_LinkedBinarySearchTree.py` and a `_ArrayBinarySearchTree.py` that define the algorithms associated with the classes `LinkedBinarySearchTree` and `ArrayBinarySearchTree`, which are defined in the interface file `BinarySearchTree.py`. The tree type has one set of inheritances through concrete classes while the interface type has a separate hierarchy. In the same example, `LinkedBinarySearchTree` both inherits from `LinkedBinaryTree`, which defines the functionality of a binary tree with a `Linked` storage paradigm and the `BinarySearchTree` interface class, which acts more as both an interface and an instance factory of classes that inherit the interface than a true multiple inheritance. `BinarySearchTree`, which itself inherits from `BinaryTree`, cannot be instantiated (and nor can `BinaryTree`). This is done in part to separate to the public API from the internal API so that it is easier to maintain abstraction while freely allowing updates. In particular, all the functionality in the files beginning with "_" could be translated to the python C api for performance boosts while the public API defining files would remain largely unchanged. In fact, this is the intention, which I hope is clear by seeing that the function signatures are all in or close to C-style.
+Each storage paradigm has its own class hierarchy for each tree type defined in separate `.py` files to organize the functionality attributable to the classes and types. For example, there are a `_LinkedBinarySearchTree.py` and a `_ArrayBinarySearchTree.py` that define the algorithms associated with the classes `LinkedBinarySearchTree` and `ArrayBinarySearchTree`, which are defined in the interface file `BinarySearchTree.py`. The tree type has one set of inheritances through concrete classes while the interface type has a separate hierarchy. In the same example, `LinkedBinarySearchTree` both inherits from `LinkedBinaryTree`, which defines the functionality of a binary tree with a `Linked` storage paradigm and the `BinarySearchTree` interface class, which acts more as both an interface and an instance factory of classes that inherit the interface than a true multiple inheritance. `BinarySearchTree`, which itself inherits from `BinaryTree`, cannot be instantiated (and nor can `BinaryTree`). This is done in part to separate to the public API from the internal API so that it is easier to maintain abstraction while freely allowing updates. In particular, all the functionality in the files beginning with "\_" could be translated to the python C api for performance boosts while the public API defining files would remain largely unchanged. In fact, this is the intention, which I hope is clear by seeing that the function signatures are all in or close to C-style.
+
+##### Nodes
 
 All trees contain node structures, even those following the Array storage paradigms. This means there is at minimum pointer cost overhead for memory compared to the most memory efficient implementations. The reason this is done to maximize cross compatibility of abstractions through interface consistency. For example, whereas the `heapq` module can do heaps "inplace" on the raw data in a sequence without having an intermediate node structure, an `OrderStatisticsTree`, which requires storage of a size/weight "decoration" in each element, either would require an intermediate node structure or forces the user to develop and maintain values that have the required decorations. The decorations would have to conform to the implementation specific methods for access or algorithms/factories would have to be developed to account for each of the different organizations of the values and decorations. This tedium can be ignored completely by requiring nodes and reserving attributes for the required decorations while the values are arbitrarily extensible. The latter strategy has been chosen, which, for the moment, requires additional pointer memory for all trees even in trivial data type cases.
 
@@ -157,20 +159,22 @@ nodeA["next"] # = None
 ```
 
 ##### Node storage
-| Node type^1 | description | valida attributes |
-|:----------- |:----------- |:----------------- |
-| `LIST_NODE` | a simple list for node decorations with integer indices as attributes^2 | non-negative integer indices|
-| `DICT_NODE` | store node as a dictionary with keys as attributes | hashable values |
-| `CLASS_NODE` | store node as a class instance with attributes | hashable values |
-| `SLOTTED_CLASS_NODE` | store node attributes in class with `__slots__` | string identifiers, specifically cannot be numerical strings |
+| Node type^1 | description | valid attributes | Advantages | Disadvantages |
+|:----------- |:----------- |:---------------- |:---------- |:------------- |
+| `LIST_NODE` | a simple list for node decorations with integer indices as attributes^2 | non-negative integer indices| fast, small overhead | no flexibility on attributes and high maintenance, sketchy typing at best |
+| `DICT_NODE` | store node as a dictionary with keys as attributes | hashable values | flexibility in attributes, low memory overhead, fast if attributes are simple | slightly less sketchy typing than `LIST_NODE` | indirect typing |
+| `CLASS_NODE` | store node as a class instance with attributes | hashable values | most flexible in attributes, clear typing | largest memory overhead, probably slightly slower than `DICT_NODE` |
+| `SLOTTED_CLASS_NODE` | store node attributes in class with `__slots__`^3 | string identifiers, specifically cannot be numerical strings | low memory overhead, fast | limited flexibility on attributes |
 
 ^1 in all node types, `VALUE_KEY` is a required attribute that should not be changed or overwritten.
 
-^2 for LIST_NODE, a warning that augmented attributes should be sequential integers. If not sequential, there is additional memory overhead. Which sequential values are available depends on the storage mechanisms and required attributes of the particular Tree type. For this reason, LIST_NODE is good for defaults, but if you need to augment, you should be using at the very least DICT_NODE.
+^2 for `LIST_NODE`, a warning that augmented attributes should be sequential integers. If not sequential, there is additional memory overhead. Which sequential values are available depends on the storage mechanisms and required attributes of the particular Tree type. For this reason, `LIST_NODE` is good for defaults, but if you need to augment, you should be using at the very least `DICT_NODE`.
 
-Nodes do not all have unique types, but there is some ability to have typing capability if the developer wants to create an extensions that passes nodes between different tree types. Applying types to `LIST_NODE` instances would require more strict control of the attributes of the nodes. In principle, one could just reserve each index for a particular preset decoration and then type would merely be the size of the list. Applying types to `DICT_NODE` could be achieved by `a.keys() <= b.keys()` meaning "`a` is a `b`" for two `DICT_NODE`s `a` and `b`. This would require that no key can have a different semantic meaning. Currently for `LIST_NODE` and `DICT_NODE`, the constant `SIZE_KEY` violates these requirements as it both has different values depending on the storage and interferes with `PARENT_KEY` in the `LinkedOrderStatistics` and `LinkedBinaryHeap` types. This was done to minimize the memory overhead in the `LIST_NODE` node storage for these types as compared to the ARRAY_STORAGE.
+^3 for `SLOTTED_CLASS_NODE`, it is still possible to accidentally inherit from a `CLASS_NODE` without error, which would destroy all the advantages of a `SLOTTED_CLASS_NODE`. Tread carefully and always test to ensure that the `__dict__` attribute is not present when creating a new node class.
 
-For `CLASS_NODE`, there is already built-in typing capability that more or less matches that which is described above for `DICT_NODE`, but there is an explicit mechanism and instance testing
+Nodes do not all have unique types, but there is some ability to have typing capability if the developer wants to create an extensions that passes nodes between different tree types. Applying types to `LIST_NODE` instances would require more strict control of the attributes of the nodes. In principle, one could just reserve each index for a particular preset decoration and then type would merely be the size of the list. Applying types to `DICT_NODE` could be achieved by `a.keys() <= b.keys()` meaning "`a` is a `b`" for two `DICT_NODE`s `a` and `b`. This would require that no key can have a different semantic meaning. Currently for `LIST_NODE` and `DICT_NODE`, the constant `SIZE_KEY` violates these requirements as it both has different values depending on the storage and interferes with `PARENT_KEY` in the `LinkedOrderStatistics` and `LinkedBinaryHeap` types. This was done to minimize the memory overhead in the `LIST_NODE` node storage for these types as compared to the `ARRAY_STORAGE`.
+
+For `CLASS_NODE` and `SLOTTED_CLASS_NODE`, there are already built-in typing capability that more or less matches that which is described above for `DICT_NODE`, but there is an explicit mechanism and instance testing
 
 ```
 from dtlib.trees._BinaryNode import Node_factory
@@ -196,11 +200,9 @@ isinstance(c, ClassNode)      # = True
 isinstance(c, SubClassNode)   # = True
 ```
 
-TODO/NOT YET IMPLEMENTED (in order of priority):
+In principle, the same thing can be done with `DICT_NODE` by subclassing `dict` on the fly, but this will require creating a standard class inheriting from `dict` which kind of defeats the purpose of having a pure `dict` type node. In this case, just use `CLASS_NODE` or if you want to be more efficient about attributes and instance sizes, use `SLOTTED_CLASS_NODE`.
 
-Allowing named subtypes of `dict` to give `DICT_NODE` similar functionality to `CLASS_NODE`
-
-### Types of trees planned (numbers not necessarily indicator order of priority)
+### Types of trees planned (numbers not necessarily indicating order of priority)
 1) AVL tree
 2) Red-Black tree
 3) Segment tree
@@ -208,7 +210,8 @@ Allowing named subtypes of `dict` to give `DICT_NODE` similar functionality to `
    - 2D/nD
 4) Interval tree
 5) Binary Indexed Tree
-6) B-tree (a generalization of but not necessarily encapsulating Binary Trees to keep the Binary Trees implementations as light and clear as possible)
+6) B-tree (a generalization of but not necessarily encapsulating Binary Trees to keep the Binary Tree implementations as light and clear as possible)
 7) Binomial Heap
 8) Pairing Heap
 9) Fibonacci Heap
+10) MinMaxTree
