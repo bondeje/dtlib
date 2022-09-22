@@ -173,7 +173,7 @@ Nodes do not all have unique types, but there is some ability to have typing cap
 For `CLASS_NODE`, there is already built-in typing capability that more or less matches that which is described above for `DICT_NODE`, but there is an explicit mechanism and instance testing
 
 ```
-from dtlib.trees._BinaryNode import ClassNode_factory
+from dtlib.trees._BinaryNode import Node_factory
 from dtlib.trees._constants import VALUE_KEY, DIR_LEFT, DIR_RIGHT, CLASS_NODE
 
 ClassNode = Node_factory(CLASS_NODE) # creates a node class with a default naming scheme with attribute VALUE_KEY and default None
@@ -188,7 +188,7 @@ b[DIR_LEFT]               # = 1
 isinstance(b, ClassNode)  # = True
 
 SubSubClassNode = Node_factory(CLASS_NODE, {DIR_RIGHT: None}, parent=SubClassNode) # creates a node class with a default naming scheme with attributes [VALUE_KEY, DIR_LEFT, DIR_RIGHT] defaulted to None
-c = SubClassNode(-1, 1, 2)    # c is an instance of SubClassNode
+#c = SubSubClassNode(-1, 1, 2)    # c is an instance of SubClassNode
 c[VALUE_KEY]                  # = -1
 c[DIR_LEFT]                   # = 1
 c[DIR_RIGHT]                  # = 2
@@ -197,8 +197,7 @@ isinstance(c, SubClassNode)   # = True
 ```
 
 TODO/NOT YET IMPLEMENTED (in order of priority):
-Allowing keywords in initialization subclasses
-Allowing named subtypes for `SLOTTED_CLASS_NODE` similar functionality to `CLASS_NODE`
+
 Allowing named subtypes of `dict` to give `DICT_NODE` similar functionality to `CLASS_NODE`
 
 ### Types of trees planned (numbers not necessarily indicator order of priority)
