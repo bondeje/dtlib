@@ -174,20 +174,20 @@ For `CLASS_NODE`, there is already built-in typing capability that more or less 
 
 ```
 from dtlib.trees._BinaryNode import ClassNode_factory
-from dtlib.trees._constants import VALUE_KEY, DIR_LEFT, DIR_RIGHT
+from dtlib.trees._constants import VALUE_KEY, DIR_LEFT, DIR_RIGHT, CLASS_NODE
 
-ClassNode = ClassNode_factory() # creates a node class with a default naming scheme with attribute VALUE_KEY and default None
+ClassNode = Node_factory(CLASS_NODE) # creates a node class with a default naming scheme with attribute VALUE_KEY and default None
 # note: if name is not provided, there is internal machinery to provide a unique name that is tracked, but this naming will not be related to the output of ClassNode_factory
 a = ClassNode(0)  # a is an instance of ClassNode
 a[VALUE_KEY]      # = 0
 
-SubClassNode = ClassNode_factory({DIR_LEFT: None}, parent=ClassNode) # creates a node class with a default naming scheme with attributes [VALUE_KEY, DIR_LEFT] defaulted to None
+SubClassNode = Node_factory(CLASS_NODE, {DIR_LEFT: None}, parent=ClassNode) # creates a node class with a default naming scheme with attributes [VALUE_KEY, DIR_LEFT] defaulted to None
 b = SubClassNode(-1, 1)   # b is an instance of SubClassNode
 b[VALUE_KEY]              # = -1
 b[DIR_LEFT]               # = 1
 isinstance(b, ClassNode)  # = True
 
-SubSubClassNode = ClassNode_factory({DIR_RIGHT: None}, parent=SubClassNode) # creates a node class with a default naming scheme with attributes [VALUE_KEY, DIR_LEFT, DIR_RIGHT] defaulted to None
+SubSubClassNode = Node_factory(CLASS_NODE, {DIR_RIGHT: None}, parent=SubClassNode) # creates a node class with a default naming scheme with attributes [VALUE_KEY, DIR_LEFT, DIR_RIGHT] defaulted to None
 c = SubClassNode(-1, 1, 2)    # c is an instance of SubClassNode
 c[VALUE_KEY]                  # = -1
 c[DIR_LEFT]                   # = 1
