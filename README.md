@@ -10,7 +10,7 @@ Do you love trees? I love trees; exploring their various implementations and alg
 Class diagram to be produced when more mature. For now, indentation indicates it inherits from the interface above it
 - `Tree` (`abc.Collection`) [complete, in testing]
   - `BinaryTree` [complete, in testing]
-    - `BinarySearchTree` (`abc.Sequence`, can be configured to be abc.Set-like) [in testing]
+    - `BinarySearchTree` (`abc.Sequence`, can be configured to be `abc.Set`-like) [complete, in testing]
       - `OrderStatisticTree` [complete, in testing]
         - `WeightBalancedTree` [complete, in testing]
     - `BinaryHeap` [complete, in testing]
