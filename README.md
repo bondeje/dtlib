@@ -1,12 +1,12 @@
 # dtlib
 A small package of basic data structures and algorithms
 
-## trees
+# trees
 Do you love trees? I love trees; exploring their various implementations and algorithms. This is a submodule of some basic and some less basic (but not advanced) realizations of trees. All of them are currently binary, but that will change soon enough.
 
-### Basic module layout and tree data type interface/construction details
+## Basic module layout and tree data type interface/construction details
 
-#### Public tree type interfaces: Class/Interface name (inheritance notes) [status]
+### Public tree type interfaces: Class/Interface name (inheritance notes) [status]
 Class diagram to be produced when more mature. For now, indentation indicates it inherits from the interface above it
 - `Tree` (`abc.Collection`) [complete, in testing]
   - `BinaryTree` [complete, in testing]
@@ -15,7 +15,7 @@ Class diagram to be produced when more mature. For now, indentation indicates it
         - `WeightBalancedTree` [complete, in testing]
     - `BinaryHeap` [complete, in testing]
       - `MinMaxHeap` [partial with `ARRAY_STORAGE` complete, in testing]
-#### Classes
+### Classes
 There are generally at least two concrete classes for each of the interfaces named `Array[Interface]` and `Linked[Interface]`, e.g. `ArrayWeightBalancedTree` and `LinkedWeightBalancedTree`, based on the underlying storage (described below). The class object for the interface can (and should) be used for instantiation of the corresponding class; they are factories for the actual concrete classes. Specifically, if you want to create a `BinarySearchTree` with `ARRAY_STORAGE` rather than `LINKED_STORAGE`, use `tree = BinarySearchTree(*args, storage=ARRAY_STORAGE, **kwargs)`. You can also use `tree = ArrayBinarySearchTree(*args, **kwargs)` but the former is preferred. Each interface has a default storage based on what makes most sense for the geometry of the tree. Trees that are balanced or complete will tend to have `ARRAY_STORAGE` preferred/default since they can take advantage of memory savings and speed improvements based on cache locality for large trees. Other trees will generally default to `LINKED_STORAGE`.
 
 Other classes (`has a` relationship to the interfaces and their subclasses, NOT `is a`):
@@ -23,14 +23,14 @@ Other classes (`has a` relationship to the interfaces and their subclasses, NOT 
 - `HeapTree` (`Sequence`, `BinaryHeap`-like and `BinarySearchTree`-like) [in planning, open to name suggestions...this is NOT a `treap`]
   - `MinMaxTree` (`Sequence`, `MinMaxHeap`-like and `BinarySearchTree`-like) [partial, in testing]
 
-#### Public API details
+### Public API details
 As can be seen above, the trees here are all derived from `Tree`, which is really just a simple interface for basic functionality and queries or modifications that we can expect to be available on all trees.
 
 For all trees, arbitrary data can be stored in each "Node" of the `Tree`. For the purposes of many trees which need to order, select, or at least differentiate contents based on attribute or derived quantity, all `Tree`s will support the storage of a `key` callable such that `key(stored data)` results in derived data that satisfies some minimal ordering (meaning at least `>` or `<`). 
 
 As an implementation note, all traversal implementations and iterators are implemented in an iterative manner, specifically no recursion, so that the impact of the key can be isolated. This means that for data that inherently is its own key and has ordering, `key=None` (default) has a performance improvement. That being said, if the data ordering is provided by an evaluated function on its internal representation, then the performance difference is likely superficial but still has the added benefit of less code copy-paste and slightly less memory consumption. For example, if the data are just strings, which have a lexicographic ordering, always use `key=None` but if the data are `(key, value)` pairs to implement a `TreeMap` using `BinarySearchTree`, `key=lambda x: x[0]` makes sense but probably does not make much of a difference over say using creating a `pair` class with `__slots__=['k','v']` and for example `def __lt__(self, other): return self.k < other.k`. The latter method probably produces cleaner, more maintainable code.
 
-##### `Tree` interface functions
+#### `Tree` interface functions
 | required function | standard semantics |
 |:----------------- |:------------------ |
 | `__contains__` | check if a key is in the `Tree` structure |
@@ -45,12 +45,12 @@ As an implementation note, all traversal implementations and iterators are imple
 
 Tree inherits abc.Collection, however, the semantics of the various abstract methods and mixin methods can vary significant based on type of Tree and even how it is configured. 
 
-##### `BinaryTree` interface functions
+#### `BinaryTree` interface functions
 A collection of plain data ordered only by relationships to 3 neighboring nodes (parent, left child, right child)
 
 No required interface functions. The concrete binary tree classes merely provide baseline implementations for subclasses. Though the direct subclasses of `BinaryTree` can be instantiated, there are not many uses cases for their instances.
 
-###### A quick note about traversals
+##### A quick note about traversals
 The `BinaryTree`s provide the base implementations of `traverse` for all `BinaryTree` subclasses. Traversal orders are specified by one of 4 flags, which are defined in `dtlib.trees._constants`. They are as below
 | traversal flag | visit order |
 |:-------------- |:----------- |
@@ -67,7 +67,7 @@ Traversals can be done in two ways:
 2) iterators for simple interfaces to the many python interfaces that accept iterables
    - use `tree.__iter__()`, `tree.__reversed__()` for configured default traversals and `tree.iterator(*args, **kwargs)` to configure the traversal on the fly.
 
-##### `BinarySearchTree` interface functions
+#### `BinarySearchTree` interface functions
 Data in a `BinaryTree` organized for searching and sorting optimization.
 | required function | standard semantics |
 |:----------------- |:------------------ |
@@ -84,19 +84,19 @@ General implementation notes:
 - reverse is done in O(1) time with an internal handle by using the member function `reverse()`, which is also compatible with `__reversed__` iteration. It is highly suggested not to reverse by defining a `key` that reverses a natural ordering if you do not have to. Specifically `a=BinarySearchTree(iterable, reverse=True)` for elements that already obey an ordering rather than something like `a=BinarySearchTree(iterable, key=lambda x: -x)` like you might do to make a `heapq` heap a "max heap". 
 - in the case of duplicates, search can be configured to find the first inserted, first encountered (default), or last inserted key with the flags `SEARCH_FIRST_INORDER`, `SEARCH_FIRST_LEVELORDER`, and `SEARCH_LAST_INORDER`, respectively.
 
-##### `OrderStatisticsTree` interface functions
+#### `OrderStatisticsTree` interface functions
 Data in a `BinarySearchTree` for which rank and selection query are optimized
 | required function | standard semantics |
 |:----------------- |:------------------ |
 | `select` | find the kth element in order |
 | `rank`   | find the sequence index corresponding to a key |
 
-##### `WeightBalancedTree` interface functions
+#### `WeightBalancedTree` interface functions
 Data in an `OrderStatisticTree` with optimization on the tree structure (self-balancing) to improve query times and, for `Array` storage, memory
 
 No required interface functions.
 
-##### `BinaryHeap` interface functions
+#### `BinaryHeap` interface functions
 A traditional Min- or Max- heap, configurable by the User
 | required function | standard semantics |
 |:----------------- |:------------------ |
@@ -107,7 +107,7 @@ A traditional Min- or Max- heap, configurable by the User
 | `push` | add a new value to heap |
 | `pushpop` | simultaneous push and pop |
 
-##### `MinMaxHeap` interface functions
+#### `MinMaxHeap` interface functions
 A dually embedded Heap structure optimized for both `min` and `max` queries at the same time
 | required function | standard semantics |
 |:----------------- |:------------------ |
@@ -116,10 +116,41 @@ A dually embedded Heap structure optimized for both `min` and `max` queries at t
 | `pushpop_max` | simultaneous pusha and remove and return the value with the maximum key |
 | `pushpop_min` | simultaneous push and remove and return the value with the minimum key |
 
-#### Internal details
+### Algorithm performance table
+
+Big O notation for expected or amortized cases (in the case of dynamic structures). When two values are shown as it O(log n)-O(n), the 1st is for the `ARRAY_STORAGE` while the 2nd is for the `LINKED_STORAGE` versions. When two values in the O notation are separated by '->', the right one is the worst-case scenario, i.e. O(log n -> n) for binary search
+
+```
+n = number of elements
+m = number of copies of data, assuming copies are allowed
+k = order statistic
+```
+
+Computational
+| Algorithm \ `Tree` -> | `BinaryTree` | `BinarySearchTree` | `OrderStatisticTree` | `WeightBalancedTree` | (Min)`Heap`    | (Max)`Heap`    | `MinMaxHeap`    | `MinMaxTree`<br> (with WBT) |
+|:---------------------:|:------------:|:------------------:|:--------------------:|:--------------------:|:--------------:|:--------------:|:---------------:|:----------:|
+| `__contains__`        | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(n)           | O(n)           | O(n)            | O(log n)   |
+| `count`               | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(n)           | O(n)           | O(n)            | O(log n)   |
+| `size`/`__len__`      | O(n)         | O(n)               | O(1)                 | O(1)                 | O(1)-<br>O(log n)^1 | O(1)-<br>O(log n)^1 | O(1)-<br>O(log n)^1  | O(1)       |
+| `add`                 | O(1)-O(n)    | O(log n -> n)      | O(log n -> n)        | O(log n -> n)-<br>O(log n)             | O(log n)       | O(log n)       | O(log n)        | O(log n)   |
+| `remove`/`discard`    | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(log n)       | O(log n)       | O(log n)        | O(log n)   |
+| `search`              | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(n)           | O(n)           | O(n)            | O(log n)   |
+| `minimum`             | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(1)           | O(n)           | O(1)            | O(1)       |
+| `maximum`             | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(n)           | O(1)           | O(1)            | O(1)       |
+| `select`              | O(n)         | O(log n -> n)      | O(log n -> n)        | O(log n)             | O(n)           | O(n)           | O(n)            | O(log n)   |
+| `rank`                | O(n)         | O(log n -> n)      | O(log n -> n)^2      | O(log n)^2           | O(n)           | O(n)           | O(n)            | O(log n)   |
+| `pop`                 | N/A          | N/A                | N/A                  | N/A                  | O(log n)       | O(log n)       | O(log n)        | O(log n)   |
+| `push`                | N/A          | N/A                | N/A                  | N/A                  | O(log n)       | O(log n)       | O(log n)        | O(log n)   |
+
+^1 not fully implemented
+
+^2 `rank` complexity includes `search` in the general case, but `search` and determination of `rank` once the internal node is found are both O(log n). For OrderStatisticTree and subclasses, the overhead for determining the `rank` after the internal node is found is only O(1).
+
+
+### Internal details
 A separate metaclass `TreeMeta` exists to customize construction of `Tree` subclasses, interfaces. For now, all this metaclass does is account for the ability to specify the storage paradigms. For all implemented `Trees`, I endeavor to make at least 2 storage paradigms available. More may be made in the future to further optimize performance.
 
-##### Storage paradigms
+#### Storage paradigms
 | Paradigm | Description | Advantages | Disadvantages |
 |:-------- |:----------- |:---------- |:------------- |
 | Array | The tree is stored as a sequence of nodes in a list | pointer/reference data locality for fast read/write access. <br> navigation algorithms are simple as fewer pointer stores need to be updated | poorly balanced trees or frequent, large data rearrangements may offset locality advantages |
@@ -127,7 +158,7 @@ A separate metaclass `TreeMeta` exists to customize construction of `Tree` subcl
    
 Each storage paradigm has its own class hierarchy for each tree type defined in separate `.py` files to organize the functionality attributable to the classes and types. For example, there are a `_LinkedBinarySearchTree.py` and a `_ArrayBinarySearchTree.py` that define the algorithms associated with the classes `LinkedBinarySearchTree` and `ArrayBinarySearchTree`, which are defined in the interface file `BinarySearchTree.py`. The tree type has one set of inheritances through concrete classes while the interface type has a separate hierarchy. In the same example, `LinkedBinarySearchTree` both inherits from `LinkedBinaryTree`, which defines the functionality of a binary tree with a `Linked` storage paradigm and the `BinarySearchTree` interface class, which acts more as both an interface and an instance factory of classes that inherit the interface than a true multiple inheritance. `BinarySearchTree`, which itself inherits from `BinaryTree`, cannot be instantiated (and nor can `BinaryTree`). This is done in part to separate to the public API from the internal API so that it is easier to maintain abstraction while freely allowing updates. In particular, all the functionality in the files beginning with "\_" could be translated to the python C api for performance boosts while the public API defining files would remain largely unchanged. In fact, this is the intention, which I hope is clear by seeing that the function signatures are all in or close to C-style.
 
-##### Nodes
+#### Nodes
 
 All trees contain node structures, even those following the Array storage paradigms. This means there is at minimum pointer cost overhead for memory compared to the most memory efficient implementations. The reason this is done to maximize cross compatibility of abstractions through interface consistency. For example, whereas the `heapq` module can do heaps "inplace" on the raw data in a sequence without having an intermediate node structure, an `OrderStatisticsTree`, which requires storage of a size/weight "decoration" in each element, either would require an intermediate node structure or forces the user to develop and maintain values that have the required decorations. The decorations would have to conform to the implementation specific methods for access or algorithms/factories would have to be developed to account for each of the different organizations of the values and decorations. This tedium can be ignored completely by requiring nodes and reserving attributes for the required decorations while the values are arbitrarily extensible. The latter strategy has been chosen, which, for the moment, requires additional pointer memory for all trees even in trivial data type cases.
 
@@ -167,7 +198,7 @@ nodeA["parent"] # = None
 nodeA["next"] # = None
 ```
 
-##### Node storage
+#### Node storage
 | Node type^1 | description | valid attributes | Advantages | Disadvantages |
 |:----------- |:----------- |:---------------- |:---------- |:------------- |
 | `LIST_NODE` | a simple list for node decorations with integer indices as attributes^2 | non-negative integer indices| fast, small overhead | no flexibility on attributes and high maintenance, sketchy typing at best |
@@ -211,7 +242,7 @@ isinstance(c, SubClassNode)   # = True
 
 In principle, the same thing can be done with `DICT_NODE` by subclassing `dict` on the fly, but this will require creating a standard class inheriting from `dict` which kind of defeats the purpose of having a pure `dict` type node. In this case, just use `CLASS_NODE` or if you want to be more efficient about attributes and instance sizes, use `SLOTTED_CLASS_NODE`.
 
-### Types of trees planned (numbers not necessarily indicating order of priority)
+## Types of trees planned (numbers not necessarily indicating order of priority)
 1) AVL tree
 2) Red-Black tree
 3) Segment tree
